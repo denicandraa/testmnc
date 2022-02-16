@@ -1,0 +1,12 @@
+{
+  "merchant": [
+    {
+      "id": "tokopedia",
+      "name_merchant": "Tokopedia"
+    },
+    {
+      "id": "bukalapak",
+      "name_merchant": "Bukalapak"
+    }
+  ]
+}

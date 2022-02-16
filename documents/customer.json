@@ -1,0 +1,22 @@
+{
+  "customer":[
+    {
+      "user_name":"deni",
+      "nama":"Deni",
+      "password":"123456",
+      "saldo": 5000000
+    },
+    {
+      "user_name":"candra",
+      "nama":"Candra",
+      "password":"654321",
+      "saldo": 1000000
+    },
+    {
+      "user_name":"wahyudi",
+      "nama":"Wahyudi",
+      "password":"000000",
+      "saldo": 3000000
+    }
+  ]
+}
