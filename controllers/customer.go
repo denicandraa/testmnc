@@ -16,7 +16,7 @@ type Customer struct {
 	helper helpers.HelpersJson
 }
 
-func (u *Customer)Pembayaran(c *gin.Context)  {
+func (u *Customer) Pembayaran(c *gin.Context) {
 
 	res := models.Response{}
 
@@ -24,10 +24,12 @@ func (u *Customer)Pembayaran(c *gin.Context)  {
 	id_merchant := c.PostForm("id_merchant")
 	saldo := c.PostForm("saldo")
 
-	if username == "" && id_merchant == "" && saldo == ""{
+	if username == "" && id_merchant == "" && saldo == "" {
+
+		//validasi parameter harus diisi jika tidak maka ditolak
 
 		res.ApiMessage = "username dan password wajib diisi"
-		c.JSON(400,res)
+		c.JSON(400, res)
 		return
 
 	}
@@ -35,19 +37,20 @@ func (u *Customer)Pembayaran(c *gin.Context)  {
 	outCustomer := u.helper.GetCustomer()
 	dataCustomer := models.Customer{}
 
+	//validasi load data customer pada file json untuk di check apakah ada data customer yang sama atau tidak
 	var akses bool
 	for i := range outCustomer {
 
-		if outCustomer[i].User_name == username{
+		if outCustomer[i].User_name == username {
 			dataCustomer = outCustomer[i]
 			akses = true
 			break
 		}
 	}
 
-	if !akses{
+	if !akses {
 		res.ApiMessage = "Pengguna tidak terdaftar , tidak dapat melakukan pembayaran"
-		c.JSON(400,res)
+		c.JSON(400, res)
 		return
 	}
 
@@ -55,39 +58,39 @@ func (u *Customer)Pembayaran(c *gin.Context)  {
 
 	for i := range outMerchant {
 
-		if outMerchant[i].Id == id_merchant{
+		if outMerchant[i].Id == id_merchant {
 			akses = true
 			break
 		}
 	}
 
-	if !akses{
+	if !akses {
 		res.ApiMessage = "Merchant tidak ditemukan"
-		c.JSON(400,res)
+		c.JSON(400, res)
 		return
 	}
 
-	saldoInt , _ := strconv.Atoi(saldo)
+	saldoInt, _ := strconv.Atoi(saldo)
 
 	sisaSaldo := dataCustomer.Saldo - saldoInt
 
 	if sisaSaldo <= 0 {
 		res.ApiMessage = "Saldo anda tidak cukup"
-		c.JSON(400,res)
+		c.JSON(400, res)
 		return
 	}
 
 	u.helper.WriteFileJsonRiwayatPembayaran(models.Riwayat{
 		Nominal_pembayaran: saldoInt,
-	User_customer: username,
-	User_merchant: id_merchant,
-	Tanggal_pembayaran: time.Now().String()})
+		User_customer:      username,
+		User_merchant:      id_merchant,
+		Tanggal_pembayaran: time.Now().String()})
 
 	outRiwayat := u.helper.GetRiwayat()
 	dataRiwayat := []models.Riwayat{}
 
 	for i := range outRiwayat {
-		if outRiwayat[i].User_customer == username{
+		if outRiwayat[i].User_customer == username {
 			dataRiwayat = append(dataRiwayat, outRiwayat[i])
 		}
 	}
@@ -95,19 +98,19 @@ func (u *Customer)Pembayaran(c *gin.Context)  {
 	res.ApiMessage = "Pembayaran berhasil, berikut histori pembayaran anda"
 	res.Data = dataRiwayat
 
-	c.JSON(200,res)
+	c.JSON(200, res)
 
 }
-func (u *Customer)Login(c *gin.Context)  {
+func (u *Customer) Login(c *gin.Context) {
 
 	res := models.Response{}
 
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 
-	if username == "" && password == ""{
+	if username == "" && password == "" {
 		res.ApiMessage = "username dan password wajib diisi"
-		c.JSON(400,res)
+		c.JSON(400, res)
 	}
 
 	outCustomer := u.helper.GetCustomer()
@@ -115,15 +118,15 @@ func (u *Customer)Login(c *gin.Context)  {
 	var akses bool
 	for i := range outCustomer {
 
-		if outCustomer[i].User_name == username{
-			if outCustomer[i].Password == password{
+		if outCustomer[i].User_name == username {
+			if outCustomer[i].Password == password {
 				mw := middleware.MiddleWare{}
 
-				token , err := mw.CreateAuth(outCustomer[i].User_name,"customer")
-				if err != nil{
+				token, err := mw.CreateAuth(outCustomer[i].User_name, "customer")
+				if err != nil {
 					res.ApiMessage = "Terdapat kesalahan silahkan ulangi login kembali"
 					akses = false
-				}else{
+				} else {
 
 					tokenRes := models.Token{
 						Token: token,
@@ -133,24 +136,24 @@ func (u *Customer)Login(c *gin.Context)  {
 					akses = true
 				}
 
-			}else{
+			} else {
 				res.ApiMessage = "Password anda salah"
 				akses = false
 			}
 			break
-		}else{
+		} else {
 			res.ApiMessage = "Akun anda tidak ditemukan"
 		}
 	}
 
-	if akses{
-		c.JSON(200,res)
-	}else{
-		c.JSON(400,res)
+	if akses {
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, res)
 	}
 
 }
-func (u *Customer)Logout(c *gin.Context)  {
+func (u *Customer) Logout(c *gin.Context) {
 
 	res := models.Response{}
 
@@ -162,29 +165,27 @@ func (u *Customer)Logout(c *gin.Context)  {
 	var akses bool
 	for i := range outAuth {
 
-		if outAuth[i].User_name == username{
-			if outAuth[i].Token == token{
+		if outAuth[i].User_name == username {
+			if outAuth[i].Token == token {
 
-				u.helper.WriteFileJsonAuthLogout(models.Auth{User_name: username,Token: token})
+				u.helper.WriteFileJsonAuthLogout(models.Auth{User_name: username, Token: token})
 				res.ApiMessage = "Logout Berhasil"
 				akses = true
 
-			}else{
+			} else {
 				res.ApiMessage = "Data tidak cocok , gagal logout"
 				akses = false
 			}
 			break
-		}else{
+		} else {
 			res.ApiMessage = "Data tidak ditemukan , gagal lout"
 		}
 	}
 
-	if akses{
-		c.JSON(200,res)
-	}else{
-		c.JSON(400,res)
+	if akses {
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, res)
 	}
 
 }
-
-

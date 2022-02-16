@@ -9,13 +9,16 @@ import (
 	"time"
 )
 
+//modul untuk jwt auth
+
 type MiddleWare struct {
 	h helpers.HelpersJson
 }
 
 var jwtKey = []byte("mncbank")
 
-func (u *MiddleWare)CreateAuth(clientUsername string, clientRole string) (token string, err error) {
+func (u *MiddleWare) CreateAuth(clientUsername string, clientRole string) (token string, err error) {
+	//berfungsi untuk membuat token yang berguna untuk mengakses endpoint tertentu yang membutuhkan token
 	sign := jwt.New(jwt.SigningMethodHS256)
 	claims := sign.Claims.(jwt.MapClaims)
 
@@ -26,12 +29,13 @@ func (u *MiddleWare)CreateAuth(clientUsername string, clientRole string) (token 
 
 	tokenx, errx := sign.SignedString(jwtKey)
 
-	data := models.Auth{User_name: clientUsername,Token: tokenx}
+	data := models.Auth{User_name: clientUsername, Token: tokenx}
 	u.h.WriteFileJsonAuthLogin(data)
 	return tokenx, errx
 }
 
-func (u *MiddleWare)Auth(c *gin.Context) {
+func (u *MiddleWare) Auth(c *gin.Context) {
+	//berfungsi untuk mengecek apakah token valid atau tidak ketika mengakses endpoint tertentu
 
 	tokenString := c.Request.Header.Get("Authorization")
 
@@ -45,17 +49,21 @@ func (u *MiddleWare)Auth(c *gin.Context) {
 
 	if token != nil && err == nil {
 
+		//jika tidak terdapat error maka token valid
+
 		var akses bool
 		dataAuth := u.h.GetAuth()
 
 		for i := range dataAuth {
-			if dataAuth[i].Token == tokenString{
+			if dataAuth[i].Token == tokenString {
+				//disini di check apakah token nya masih ada pada file json agar masih dapat dipakai
 				akses = true
 				break
 			}
 		}
 
-		if !akses{
+		if !akses {
+			//jika token tidak ada pada file json maka diabaikan / ditolak
 			result := models.Response{}
 
 			result.ApiMessage = "Sesi anda telah habis , silahkan login ulang"

@@ -9,7 +9,8 @@ import (
 type Main struct {
 	router *gin.Engine
 }
-func (m *Main)init() (error) {
+
+func (m *Main) init() error {
 
 	m.router = gin.Default()
 
@@ -17,12 +18,14 @@ func (m *Main)init() (error) {
 
 }
 
-func main()  {
+func main() {
+
+	//setup gin
 
 	m := Main{}
 	midd := middleware.MiddleWare{}
 
-	if m.init() != nil{
+	if m.init() != nil {
 		return
 	}
 
@@ -30,14 +33,14 @@ func main()  {
 
 	api := m.router.Group("/mncbank/")
 
-	api.POST("login",customer.Login)
-	api.POST("logout",customer.Logout)
+	api.POST("login", customer.Login)
+	api.POST("logout", customer.Logout)
 
-
+	//endpoint tertentu menggunakan auth jwt
 	auth := api.Group("")
 	auth.Use(midd.Auth)
 	{
-		auth.POST("pembayaran",customer.Pembayaran)
+		auth.POST("pembayaran", customer.Pembayaran)
 	}
 
 	m.router.Run(":8080")
